@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Minimal Shared Int Buffer Demo</title>
+</head>
+<body>
+  <script src="shared_persistent_int.js"></script>
+  <script>
+    Module.onRuntimeInitialized = () => {
+      const init_buffer = Module.cwrap("init_buffer", "number", ["number"]);
+      const process_buffer = Module.cwrap("process_buffer", null, ["number", "number", "number"]);
+      const free_buffer = Module.cwrap("free_buffer", null, ["number"]);
+
+      const length = 8;
+      let ptr = init_buffer(length);
+      const offset = ptr / 4;
+
+      const readBuffer = () => Array.from(Module.HEAP32.subarray(offset, offset + length));
+      const writeSequence = (base) => {
+        const arr = new Int32Array(length);
+        for (let i = 0; i < length; ++i) arr[i] = base + i;
+        Module.HEAP32.set(arr, offset);
+      };
+
+      let tick = 0;
+      function step() {
+        writeSequence(tick * 10);
+        console.log("JS wrote:", readBuffer());
+
+        process_buffer(ptr, length, 3);
+        console.log("After C.process (x3):", readBuffer());
+        console.log("---");
+
+        tick++;
+        setTimeout(step, 600); // loop every 600ms
+      }
+
+      window.addEventListener("beforeunload", () => free_buffer(ptr));
+
+      console.log("Starting minimal shared integer buffer demo...");
+      step();
+    };
+  </script>
+</body>
+</html>
