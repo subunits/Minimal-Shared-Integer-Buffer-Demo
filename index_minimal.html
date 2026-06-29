@@ -7,38 +7,65 @@
 <body>
   <script src="shared_persistent_int.js"></script>
   <script>
+    // The SafeBridge encapsulates memory access to prevent direct pointer errors
+    const SafeBridge = {
+      ptr: null,
+      length: 0,
+      offset: 0,
+
+      init(len) {
+        this.length = len;
+        this.ptr = _init_buffer(len);
+        this.offset = this.ptr / 4;
+      },
+
+      process(factor) {
+        if (!this.ptr) return;
+        _process_buffer(this.ptr, this.length, factor);
+      },
+
+      free() {
+        if (this.ptr) {
+          _free_buffer(this.ptr);
+          this.ptr = null;
+        }
+      },
+
+      getReadView() {
+        return Module.HEAP32.subarray(this.offset, this.offset + this.length);
+      },
+
+      writeArray(arr) {
+        if (arr.length <= this.length) {
+          Module.HEAP32.set(arr, this.offset);
+        }
+      }
+    };
+
     Module.onRuntimeInitialized = () => {
-      const init_buffer = Module.cwrap("init_buffer", "number", ["number"]);
-      const process_buffer = Module.cwrap("process_buffer", null, ["number", "number", "number"]);
-      const free_buffer = Module.cwrap("free_buffer", null, ["number"]);
-
       const length = 8;
-      let ptr = init_buffer(length);
-      const offset = ptr / 4;
-
-      const readBuffer = () => Array.from(Module.HEAP32.subarray(offset, offset + length));
-      const writeSequence = (base) => {
-        const arr = new Int32Array(length);
-        for (let i = 0; i < length; ++i) arr[i] = base + i;
-        Module.HEAP32.set(arr, offset);
-      };
+      SafeBridge.init(length);
 
       let tick = 0;
       function step() {
-        writeSequence(tick * 10);
-        console.log("JS wrote:", readBuffer());
+        // Prepare data safely
+        const data = new Int32Array(length);
+        for (let i = 0; i < length; ++i) data[i] = (tick * 10) + i;
+        
+        SafeBridge.writeArray(data);
+        console.log("JS wrote:", SafeBridge.getReadView());
 
-        process_buffer(ptr, length, 3);
-        console.log("After C.process (x3):", readBuffer());
+        SafeBridge.process(3);
+        console.log("After C.process (x3):", SafeBridge.getReadView());
         console.log("---");
 
         tick++;
-        setTimeout(step, 600); // loop every 600ms
+        setTimeout(step, 600);
       }
 
-      window.addEventListener("beforeunload", () => free_buffer(ptr));
+      window.addEventListener("beforeunload", () => SafeBridge.free());
 
-      console.log("Starting minimal shared integer buffer demo...");
+      console.log("Starting safe shared integer buffer demo...");
       step();
     };
   </script>
