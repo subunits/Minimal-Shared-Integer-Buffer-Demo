@@ -1,25 +1,20 @@
-# Minimal Shared Integer Buffer Demo
+# Structured Shared Memory Demo
 
-A high-performance, memory-safe demonstration of sharing and manipulating data between JavaScript and C using Emscripten.
+A high-performance, bare-metal demonstration of sharing structured data between JavaScript and C using WebAssembly linear memory.
 
-## Why this is "Safe"
-This project uses a defensive approach to memory management, specifically designed to minimize corruption and leak risks:
-* **Encapsulation:** The `SafeBridge` JavaScript object prevents direct pointer manipulation.
-* **Validation:** C-side operations perform defensive checks for `NULL` pointers and boundary conditions.
-* **Zero-Initialization:** Uses `calloc` to ensure memory is never in an undefined state.
-* **Lifecycle Management:** Centralized `free` logic handles memory cleanup.
+## Why this approach?
+* **Bare-Metal Performance:** By bypassing high-level bindings like Embind, this implementation interacts directly with the WebAssembly heap.
+* **Predictable Memory Layout:** Uses `__attribute__((packed))` in C to ensure the binary structure matches the JavaScript `TypedArray` expectations exactly.
+* **Zero-Copy Serialization:** JavaScript views (`Int32Array`, `Float32Array`) map directly to the shared memory address, eliminating the need for data conversion.
 
 ## Build Instructions
-1.  **Compile the C code:**
-    ```bash
-    emcc shared_persistent_int.c \
-      -s EXPORTED_FUNCTIONS='["_init_buffer","_process_buffer","_free_buffer"]' \
-      -s EXPORTED_RUNTIME_METHODS='["cwrap"]' \
-      -s MODULARIZE=0 \
-      -O2 \
-      -o shared_persistent_int.js
-    ```
-    *Tip: Add `-s SAFE_HEAP=1 -s ASSERTIONS=1` to these flags during development for built-in runtime safety checks.*
+1. **Compile the C code:**
+   ```bash
+   emcc shared_struct.c \
+     -s EXPORTED_FUNCTIONS='["_init_packet","_process_packet","_free_packet"]' \
+     -s MODULARIZE=0 \
+     -O2 \
+     -o shared_struct.js
 
 2.  **Serve and Test:**
     ```bash
