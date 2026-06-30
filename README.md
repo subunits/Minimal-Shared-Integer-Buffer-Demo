@@ -10,7 +10,7 @@ A high-performance, bare-metal demonstration of sharing structured data between 
 ## Build Instructions
 1. **Compile the C code:**
    ```bash
-   emcc shared_struct.c \
+   emcc shared_persistent_int.c \
      -s EXPORTED_FUNCTIONS='["_init_packet","_process_packet","_free_packet"]' \
      -s MODULARIZE=0 \
      -O2 \
@@ -20,7 +20,7 @@ A high-performance, bare-metal demonstration of sharing structured data between 
     ```bash
     python3 -m http.server 8080
     ```
-    Open `http://localhost:8080/index_minimal.html` and check your browser console.
+    Open `http://localhost:8080/index_struct.html` and check your browser console.
 
 ## Architecture
 The demo establishes a bridge between the browser and WebAssembly's linear memory.
