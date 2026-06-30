@@ -1,29 +1,28 @@
 #include <emscripten/emscripten.h>
 #include <stdlib.h>
 
-// Allocate an int buffer and zero-initialize it for safety
+typedef struct {
+    int id;
+    float value;
+    int active;
+} DataPacket;
+
 EMSCRIPTEN_KEEPALIVE
-int* init_buffer(int length) {
-    if (length <= 0) return NULL;
-    // calloc is safer than malloc as it zeroes the memory
-    return (int*)calloc(length, sizeof(int)); 
+DataPacket* init_packet() {
+    // Allocate memory for a single struct
+    return (DataPacket*)calloc(1, sizeof(DataPacket));
 }
 
-// Process buffer in-place with boundary validation
 EMSCRIPTEN_KEEPALIVE
-void process_buffer(int* buf, int length, int factor) {
-    // Defensive check: abort if pointer is null or length is invalid
-    if (buf == NULL || length <= 0) return;
+void process_packet(DataPacket* packet, float multiplier) {
+    if (packet == NULL) return;
     
-    for (int i = 0; i < length; ++i) {
-        buf[i] *= factor;
-    }
+    // Process the struct fields
+    packet->value *= multiplier;
+    packet->active = (packet->value > 0) ? 1 : 0;
 }
 
-// Free buffer with null-check
 EMSCRIPTEN_KEEPALIVE
-void free_buffer(int* buf) {
-    if (buf != NULL) {
-        free(buf);
-    }
+void free_packet(DataPacket* packet) {
+    if (packet != NULL) free(packet);
 }
