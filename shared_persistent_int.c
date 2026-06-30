@@ -1,28 +1,29 @@
 #include <emscripten/emscripten.h>
 #include <stdlib.h>
+#include <stdint.h>
 
-typedef struct {
-    int id;
+// Packed struct ensures memory layout is identical to JS views
+typedef struct __attribute__((packed)) {
+    int32_t id;
     float value;
-    int active;
+    int32_t active;
 } DataPacket;
 
 EMSCRIPTEN_KEEPALIVE
 DataPacket* init_packet() {
-    // Allocate memory for a single struct
     return (DataPacket*)calloc(1, sizeof(DataPacket));
 }
 
 EMSCRIPTEN_KEEPALIVE
-void process_packet(DataPacket* packet, float multiplier) {
-    if (packet == NULL) return;
+void process_packet(DataPacket* p) {
+    if (p == NULL) return;
     
-    // Process the struct fields
-    packet->value *= multiplier;
-    packet->active = (packet->value > 0) ? 1 : 0;
+    // Logic: Double the value and toggle active status based on positivity
+    p->value *= 2.0f;
+    p->active = (p->value > 0) ? 1 : 0;
 }
 
 EMSCRIPTEN_KEEPALIVE
-void free_packet(DataPacket* packet) {
-    if (packet != NULL) free(packet);
+void free_packet(DataPacket* p) {
+    if (p != NULL) free(p);
 }
