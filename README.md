@@ -9,12 +9,13 @@ A high-performance, bare-metal demonstration of sharing structured data between 
 
 ## Build Instructions
 1. **Compile the C code:**
-   ```bash
-   emcc shared_struct.c \
-     -s EXPORTED_FUNCTIONS='["_init_packet","_process_packet","_free_packet"]' \
-     -s MODULARIZE=0 \
-     -O2 \
-     -o shared_struct.js
+```bash
+emcc shared_struct.c \
+  -s EXPORTED_FUNCTIONS='["_init_packet","_process_packet","_free_packet"]' \
+  -s MODULARIZE=1 \
+  -s EXPORT_NAME='Module' \
+  -O2 \
+  -o shared_struct.js
 
 2.  **Serve and Test:**
     ```bash
