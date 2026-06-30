@@ -11,14 +11,15 @@ typedef struct __attribute__((packed)) {
 
 EMSCRIPTEN_KEEPALIVE
 DataPacket* init_packet() {
-    return (DataPacket*)calloc(1, sizeof(DataPacket));
+    // calloc ensures memory starts at zero
+    return (DataPacket*)calloc(1, sizeof(DataPacket)); 
 }
 
 EMSCRIPTEN_KEEPALIVE
 void process_packet(DataPacket* p) {
     if (p == NULL) return;
     
-    // Logic: Double the value and toggle active status based on positivity
+    // Perform processing directly on linear memory
     p->value *= 2.0f;
     p->active = (p->value > 0) ? 1 : 0;
 }
