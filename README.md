@@ -12,7 +12,7 @@ A high-performance, bare-metal demonstration of sharing structured data between 
    ```bash
    emcc shared_struct.c \
      -s EXPORTED_FUNCTIONS='["_init_packet","_process_packet","_free_packet"]' \
-     -s MODULARIZE=0 \
+     -s MODULARIZE=1 \
      -s EXPORT_NAME='Module' \
      -O2 \
      -o shared_struct.js
