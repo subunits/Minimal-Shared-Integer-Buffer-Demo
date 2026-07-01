@@ -12,7 +12,6 @@ A high-performance, bare-metal demonstration of sharing structured data between 
    ```bash
    emcc shared_struct.c -s EXPORTED_FUNCTIONS='["_init_packet","_process_packet","_free_packet"]' -s EXPORTED_RUNTIME_METHODS='["HEAP32"]' -O2 -o shared_struct.js
 
-
 2.  **Serve and Test:**
     ```bash
     python3 -m http.server 8080
